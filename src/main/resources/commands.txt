@@ -1,0 +1,21 @@
+keytool -genkeypair -alias client_key -keyalg RSA -keysize 2048 -storetype JKS -keystore client_key.jks -validity 3650
+keytool -genkeypair -alias server_key -keyalg RSA -keysize 2048 -storetype JKS -keystore server_key.jks -validity 3650
+
+keytool -export -alias client_key -file client_key.crt -keystore client_key.jks
+keytool -export -alias server_key -file server_key.crt -keystore server_key.jks
+
+keytool -v -importcert -file client_key.crt -alias client_key -keystore client_trust.jks
+keytool -import -alias client_key -file client_key.crt -keystore server_key.jks
+keytool -import -alias server_key -file server_key.crt -keystore client_key.jks
+
+keytool -import -noprompt -trustcacerts -alias client_key -file C:/Users/Uname/Videos/certs/client_key.crt -keystore cacerts
+
+keytool -v -list -keystore server_key.jks
+keytool -v -list -keystore client_key.jks
+
+keytool -delete -alias server_key -keystore cacerts
+
+openssl ecparam -out root.key -name prime256v1 -genkey
+openssl req -new -sha256 -key root.key -out root.csr
+
+openssl pkcs12 -export -in ssl-certificate-all.pem -inkey client_key.jks -out keystore.pfx -name myname -CAfile ssl-certificate-chain.crt -caname mycaname
